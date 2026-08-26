@@ -28,10 +28,17 @@ export interface ProcessedCommit {
 const GITHUB_API = 'https://api.github.com'
 
 async function fetchWithHeaders(url: string) {
+  const headers: Record<string, string> = {
+    Accept: 'application/vnd.github.v3+json',
+  }
+  // Optional: raises the unauthenticated 60 req/hr limit to 5000 req/hr.
+  // Only read server-side (generateMetadata / OG route) — undefined in the browser bundle.
+  if (process.env.GITHUB_TOKEN) {
+    headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`
+  }
+
   const res = await fetch(url, {
-    headers: {
-      Accept: 'application/vnd.github.v3+json',
-    },
+    headers,
     next: { revalidate: 3600 },
   })
 
