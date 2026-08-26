@@ -36,11 +36,28 @@ function ScoreBar({ score }: { score: number }) {
 
 export default function DevTypeCard({ devType, averageScore }: Props) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6 flex flex-col gap-4">
-      <div className="flex items-start gap-4">
-        <span className="text-5xl">{devType.emoji}</span>
+    <div
+      className="rounded-2xl border bg-card p-6 flex flex-col gap-4 relative overflow-hidden"
+      style={{ borderColor: `${devType.color}40` }}
+    >
+      {/* Signature-color glow, purely decorative */}
+      <div
+        className="absolute -top-16 -right-16 w-48 h-48 rounded-full blur-3xl opacity-20 pointer-events-none"
+        style={{ background: devType.color }}
+      />
+
+      <div className="flex items-start gap-4 relative">
+        <span
+          className="text-5xl w-16 h-16 flex items-center justify-center rounded-2xl shrink-0"
+          style={{ background: `${devType.color}1a` }}
+        >
+          {devType.emoji}
+        </span>
         <div className="flex flex-col gap-1">
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+          <p
+            className="text-xs font-semibold uppercase tracking-wider"
+            style={{ color: devType.color }}
+          >
             Tu tipo de dev
           </p>
           <h2 className="text-xl font-semibold text-foreground">{devType.name}</h2>
