@@ -9,6 +9,7 @@ import CommitHighlights from '@/app/components/CommitHighlights'
 import DevTypeCard from '@/app/components/DevTypeCard'
 import StatsGrid from '@/app/components/StatsGrid'
 import ShareCard from '@/app/components/ShareCard'
+import SiteFooter from '@/app/components/SiteFooter'
 
 type Status = 'loading' | 'done' | 'error'
 
@@ -132,6 +133,8 @@ export default function DashboardPage() {
           <h2 className="text-base font-medium text-foreground">Comparte tu Git Mood</h2>
           <ShareCard username={username} stats={stats} />
         </section>
+
+        <SiteFooter />
 
       </div>
     </main>
