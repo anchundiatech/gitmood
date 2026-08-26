@@ -69,7 +69,7 @@ Paso a paso:
 
 1. Haz un fork del repo.
 2. Crea una rama nueva: `git checkout -b feature/tu-cambio`.
-3. Instala dependencias: `npm install`.
-4. Corre el proyecto en local: `npm run dev`.
+3. Instala dependencias: `pnpm install`.
+4. Corre el proyecto en local: `pnpm run dev`.
 5. Haz tus cambios con commits claros.
 6. Abre un Pull Request describiendo el cambio y el contexto.
