@@ -57,6 +57,8 @@ export interface DevType {
   name: string
   emoji: string
   description: string
+  /** Signature accent color for this archetype — used for card glows, share images and OG cards. */
+  color: string
 }
 
 const DEV_TYPES: DevType[] = [
@@ -65,36 +67,42 @@ const DEV_TYPES: DevType[] = [
     name: 'The Midnight Debugger',
     emoji: '🌙',
     description: 'Vive después de las 11pm. El café es su combustible.',
+    color: '#818cf8',
   },
   {
     id: 'perfectionist',
     name: 'The Clean Coder',
     emoji: '✨',
     description: 'Commits claros, código limpio. Un ejemplo a seguir.',
+    color: '#34d399',
   },
   {
     id: 'firefighter',
     name: 'The Firefighter',
     emoji: '🚒',
     description: 'Siempre apagando incendios. Vive del hotfix.',
+    color: '#fb923c',
   },
   {
     id: 'chaos',
     name: 'The Chaos Gremlin',
     emoji: '🌀',
     description: 'Humor impredecible. O todo va bien o todo explota.',
+    color: '#e879f9',
   },
   {
     id: 'grumpy',
     name: 'The Grumpy Genius',
     emoji: '😤',
     description: 'Frustrado, pero siempre entrega. El código habla por él.',
+    color: '#fbbf24',
   },
   {
     id: 'shipper',
     name: 'The Serial Shipper',
     emoji: '🚀',
     description: 'Deploy tras deploy. Move fast, break things.',
+    color: '#38bdf8',
   },
 ]
 
