@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import SearchForm from './components/SearchForm'
+import SiteFooter from './components/SiteFooter'
 
 const EXAMPLES = ['torvalds', 'gaearon', 'sindresorhus', 'midudev']
 
@@ -51,9 +52,12 @@ export default function Home() {
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-muted-foreground/60 mt-4">
-          Solo analiza repositorios y commits públicos
-        </p>
+        <div className="flex flex-col items-center gap-3 mt-4">
+          <p className="text-xs text-muted-foreground/60">
+            Solo analiza repositorios y commits públicos
+          </p>
+          <SiteFooter />
+        </div>
       </div>
     </main>
   )
