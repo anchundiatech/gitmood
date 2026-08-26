@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+﻿## GitHub Mood
 
-## Getting Started
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![React](https://img.shields.io/badge/React-19-61dafb)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-38b2ac)
+![Status](https://img.shields.io/badge/Status-WIP-f59e0b)
 
-First, run the development server:
+Un proyecto pequeño para visualizar tu estado de ánimo a partir del análisis de los commits en tus repositorios públicos de GitHub.
+
+Solo ingresas tu `username` de GitHub y en segundos descubres:
+
+- Tipo de dev (The Midnight Debugger, The Chaos Gremlin, The Clean Coder...).
+- Tu estado emocional mes a mes a lo largo del último año.
+- Tus commits más felices y más dramáticos.
+- Estadísticas curiosas: hora pico, día más activo, mejor y peor repo.
+
+No requiere autenticación. Solo usa la API pública de GitHub.
+
+
+
+## Stack
+
+- Next.js 16 — App Router, SSR.
+- Recharts — Gráfica de mood timeline.
+- `sentiment` (npm) — Análisis de sentimiento sin API externa.
+- Tailwind CSS — Estilos.
+- CubePath — Deploy y hosting.
+
+## Instalación
+
+1.- Clona el repo en local
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/anchundiatech/gitmood.git
+
+```
+2.- Abre el repo con:
+
+```bash
+cd gitmood
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3.- Instala dependiencia con tu empaquetador favorito
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+pnpm install
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Desarrollo
 
-## Learn More
+```bash
+pnpm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Luego abre `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Build
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+pnpm run build
+pnpm run start
+```
 
-## Deploy on Vercel
+## Contribuciones
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+PRs y issues son bienvenidos. Para cambios grandes, abre un issue primero para discutir el alcance.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Paso a paso:
+
+1. Haz un fork del repo.
+2. Crea una rama nueva: `git checkout -b feature/tu-cambio`.
+3. Instala dependencias: `npm install`.
+4. Corre el proyecto en local: `npm run dev`.
+5. Haz tus cambios con commits claros.
+6. Abre un Pull Request describiendo el cambio y el contexto.
