@@ -1,6 +1,7 @@
 'use client'
 
 import { useRef, useState } from 'react'
+import html2canvas from 'html2canvas'
 import type { DevStats } from '@/app/lib/analyzer'
 
 interface Props {
@@ -8,99 +9,197 @@ interface Props {
   stats: DevStats
 }
 
+async function renderCardToBlob(el: HTMLElement): Promise<Blob | null> {
+  const canvas = await html2canvas(el, {
+    backgroundColor: '#0a0a0a',
+    scale: 2,
+    useCORS: true,
+  })
+  return new Promise((resolve) => canvas.toBlob(resolve, 'image/png'))
+}
+
 export default function ShareCard({ username, stats }: Props) {
   const cardRef = useRef<HTMLDivElement>(null)
-  const [downloading, setDownloading] = useState(false)
-
-  async function handleDownload() {
-    if (!cardRef.current) return
-    setDownloading(true)
-    try {
-      const html2canvas = (await import('html2canvas')).default
-      const canvas = await html2canvas(cardRef.current, {
-        scale: 2,
-        backgroundColor: '#0a0a0a',
-        logging: false,
-      })
-      const link = document.createElement('a')
-      link.download = `gitmood-${username}.png`
-      link.href = canvas.toDataURL('image/png')
-      link.click()
-    } finally {
-      setDownloading(false)
-    }
-  }
+  const [busy, setBusy] = useState<'download' | 'share' | null>(null)
+  const [copied, setCopied] = useState(false)
 
   const score = stats.averageScore
   const scoreStr = score > 0 ? `+${score}` : `${score}`
+  const profileUrl = typeof window !== 'undefined' ? `${window.location.origin}/${username}` : ''
+  const shareText = `Soy ${stats.devType.emoji} ${stats.devType.name} según mis commits de GitHub (humor: ${scoreStr}). ¿Tú qué tipo de dev eres?`
+
+  async function handleDownload() {
+    if (!cardRef.current || busy) return
+    setBusy('download')
+    try {
+      const blob = await renderCardToBlob(cardRef.current)
+      if (!blob) return
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `gitmood-${username}.png`
+      link.click()
+      URL.revokeObjectURL(url)
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  async function handleShare() {
+    if (!cardRef.current || busy) return
+    setBusy('share')
+    try {
+      const blob = await renderCardToBlob(cardRef.current)
+      if (!blob) return
+      const file = new File([blob], `gitmood-${username}.png`, { type: 'image/png' })
+      const canShareFile = typeof navigator.canShare === 'function' && navigator.canShare({ files: [file] })
+
+      if (canShareFile) {
+        try {
+          await navigator.share({ files: [file], text: shareText, title: 'GitMood' })
+        } catch {
+          // User cancelled the share sheet — not an error.
+        }
+      } else {
+        await handleDownload()
+      }
+    } finally {
+      setBusy(null)
+    }
+  }
+
+  function handleShareTwitter() {
+    const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(profileUrl)}`
+    window.open(url, '_blank', 'noopener,noreferrer')
+  }
+
+  async function handleCopyLink() {
+    if (!profileUrl) return
+    await navigator.clipboard.writeText(profileUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const canNativeShare = typeof navigator !== 'undefined' && typeof navigator.share === 'function'
+
+  const s = {
+    card: {
+      background: '#0a0a0a',
+      border: '1px solid #222222',
+      borderTop: `3px solid ${stats.devType.color}`,
+      borderRadius: '16px',
+      padding: '24px',
+      display: 'flex',
+      flexDirection: 'column' as const,
+      gap: '16px',
+      fontFamily: 'system-ui, sans-serif',
+    },
+    headerRow: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    brandText: { color: '#ffffff', fontWeight: 600, fontSize: '14px' },
+    mutedText: { color: '#52525b', fontSize: '12px' },
+    devRow: { display: 'flex', alignItems: 'center', gap: '12px' },
+    emoji: {
+      fontSize: '40px',
+      lineHeight: 1,
+      width: '64px',
+      height: '64px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: '16px',
+      background: `${stats.devType.color}1a`,
+      flexShrink: 0,
+    },
+    devName: { color: '#ffffff', fontWeight: 600, fontSize: '18px', lineHeight: 1.2, margin: 0 },
+    devDesc: { color: '#a1a1aa', fontSize: '13px', margin: '4px 0 0' },
+    statsGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px' },
+    statBox: { background: '#141414', borderRadius: '12px', padding: '12px' },
+    statLabel: { color: '#52525b', fontSize: '11px', marginBottom: '4px' },
+    statValue: { color: '#ffffff', fontWeight: 600, fontSize: '15px' },
+    commitBox: { background: '#141414', borderRadius: '12px', padding: '12px' },
+    commitLabel: { color: '#52525b', fontSize: '11px', marginBottom: '6px' },
+    commitText: { color: '#d4d4d8', fontSize: '13px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' as const },
+    footer: { color: '#3f3f46', fontSize: '11px', textAlign: 'center' as const },
+  }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Card preview */}
-      <div
-        ref={cardRef}
-        className="rounded-2xl p-6 flex flex-col gap-4"
-        style={{ background: '#0a0a0a', border: '1px solid #222' }}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-white font-semibold text-sm">GitMood</span>
-          </div>
-          <span className="text-zinc-500 text-xs">github.com/{username}</span>
+      <div ref={cardRef} style={s.card}>
+        <div style={s.headerRow}>
+          <span style={s.brandText}>GitMood</span>
+          <span style={s.mutedText}>github.com/{username}</span>
         </div>
 
-        {/* Dev type */}
-        <div className="flex items-center gap-3">
-          <span className="text-4xl">{stats.devType.emoji}</span>
+        <div style={s.devRow}>
+          <span style={s.emoji}>{stats.devType.emoji}</span>
           <div>
-            <p className="text-white font-semibold text-lg leading-tight">
-              {stats.devType.name}
-            </p>
-            <p className="text-zinc-400 text-sm">{stats.devType.description}</p>
+            <p style={s.devName}>{stats.devType.name}</p>
+            <p style={s.devDesc}>{stats.devType.description}</p>
           </div>
         </div>
 
-        {/* Stats row */}
-        <div className="grid grid-cols-3 gap-3">
-          <div className="rounded-xl p-3" style={{ background: '#141414' }}>
-            <p className="text-zinc-500 text-xs mb-1">Commits</p>
-            <p className="text-white font-semibold">{stats.totalCommits}</p>
+        <div style={s.statsGrid}>
+          <div style={s.statBox}>
+            <p style={s.statLabel}>Commits</p>
+            <p style={s.statValue}>{stats.totalCommits}</p>
           </div>
-          <div className="rounded-xl p-3" style={{ background: '#141414' }}>
-            <p className="text-zinc-500 text-xs mb-1">Humor</p>
-            <p className="text-white font-semibold">{scoreStr}</p>
+          <div style={s.statBox}>
+            <p style={s.statLabel}>Humor</p>
+            <p style={s.statValue}>{scoreStr}</p>
           </div>
-          <div className="rounded-xl p-3" style={{ background: '#141414' }}>
-            <p className="text-zinc-500 text-xs mb-1">Hora pico</p>
-            <p className="text-white font-semibold">
-              {stats.mostActiveHour}:00h
-            </p>
+          <div style={s.statBox}>
+            <p style={s.statLabel}>Hora pico</p>
+            <p style={s.statValue}>{stats.mostActiveHour}:00h</p>
           </div>
         </div>
 
-        {/* Best commit */}
         {stats.topPositive[0] && (
-          <div className="rounded-xl p-3" style={{ background: '#141414' }}>
-            <p className="text-zinc-500 text-xs mb-1">Commit más feliz</p>
-            <p className="text-zinc-200 text-sm truncate">
-              &quot;{stats.topPositive[0].commit.message}&quot;
-            </p>
+          <div style={s.commitBox}>
+            <p style={s.commitLabel}>Commit más feliz</p>
+            <p style={s.commitText}>&ldquo;{stats.topPositive[0].commit.message}&rdquo;</p>
           </div>
         )}
 
-        {/* Footer */}
-        <p className="text-zinc-600 text-xs text-center">gitmood.cubepath.app</p>
+        <p style={s.footer}>gitmood-eta.vercel.app</p>
       </div>
 
-      {/* Download button */}
-      <button
-        onClick={handleDownload}
-        disabled={downloading}
-        className="w-full py-3 rounded-xl border border-border text-sm font-medium text-foreground hover:bg-accent active:scale-95 disabled:opacity-50 transition-all"
-      >
-        {downloading ? 'Generando imagen...' : '⬇ Descargar tarjeta'}
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          onClick={handleDownload}
+          disabled={busy !== null}
+          className="px-4 py-2.5 rounded-xl bg-foreground text-background text-sm font-medium hover:opacity-90 active:scale-95 disabled:opacity-50 transition-all"
+        >
+          {busy === 'download' ? 'Generando…' : '📥 Descargar imagen'}
+        </button>
+
+        {canNativeShare && (
+          <button
+            onClick={handleShare}
+            disabled={busy !== null}
+            className="px-4 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-accent disabled:opacity-50 transition-all"
+          >
+            {busy === 'share' ? 'Generando…' : '📱 Compartir'}
+          </button>
+        )}
+
+        <button
+          onClick={handleShareTwitter}
+          className="px-4 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-accent transition-all"
+        >
+          𝕏 Compartir en X
+        </button>
+
+        <button
+          onClick={handleCopyLink}
+          className="px-4 py-2.5 rounded-xl border border-border text-sm font-medium hover:bg-accent transition-all"
+        >
+          {copied ? '✓ Copiado' : '🔗 Copiar link'}
+        </button>
+      </div>
     </div>
   )
 }
